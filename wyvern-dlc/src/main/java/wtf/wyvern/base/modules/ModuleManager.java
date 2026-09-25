@@ -77,6 +77,9 @@ public final class ModuleManager implements IMinecraft {
         registerModule(ElytraBooster.INSTANCE);
         registerModule(ElytraRecast.INSTANCE);
         registerModule(GrimGlide.INSTANCE);
+        registerModule(wtf.wyvern.client.modules.impl.movement.TargetStrafe.INSTANCE);
+        registerModule(wtf.wyvern.client.modules.impl.movement.PearlPhase.INSTANCE);
+        registerModule(wtf.wyvern.client.modules.impl.player.HitboxDesync.INSTANCE);
         registerModule(GuiWalk.INSTANCE);
         registerModule(NoSlow.INSTANCE);
         registerModule(Speed.INSTANCE);
