@@ -35,7 +35,7 @@ public class AutoTotem extends Module {
             needTotem = checkLethalCrystals();
         }
 
-        if (needTotem && mc.player.getOffHandStack().getItem() != Items.TOTEM_OF_UNDYING) {
+        if (needTotem && mc.player.getOffHandStack().getItem() != Items.TOTEM_OF_UNDYING && mc.player.getMainHandStack().getItem() != Items.TOTEM_OF_UNDYING) {
             int totemSlot = InventoryUtil.findItem(Items.TOTEM_OF_UNDYING);
             if (totemSlot != -1) {
                 // Легитный свап: клик по слоту, затем клик по оффхэнду (слот 45)
@@ -49,7 +49,7 @@ public class AutoTotem extends Module {
 
     private boolean checkLethalCrystals() {
         if (mc.world == null) return false;
-        List<EndCrystalEntity> crystals = mc.world.getEntitiesByClass(EndCrystalEntity.class, mc.player.getBoundingBox().expand(12.0), c -> true);
+        List<EndCrystalEntity> crystals = mc.world.getEntitiesByClass(EndCrystalEntity.class, mc.player.getBoundingBox().expand(12.0), entity -> true);
         if (crystals.isEmpty()) return false;
 
         float currentHp = mc.player.getHealth() + mc.player.getAbsorptionAmount();
