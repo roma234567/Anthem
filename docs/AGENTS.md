@@ -108,8 +108,23 @@ In 1.21.4, movement packets have strict structural requirements:
 ---
 
 ## 5. Development Guidelines & Pitfalls
-1. **Never use Python via Bash:** Modifying files via regex in python scripts is unstable and error-prone. Use native API tools (`write_file`, `edit_file`).
+1. **MANDATORY: Use `write_file` / `edit_file` only.** NEVER use Python or bash scripts (like `sed` / `awk`) to edit Java code. Direct file manipulation via the provided API tools ensures code integrity and syntax safety. If you need to rewrite a class, read it, copy what you need, and use `write_file` to replace it cleanly.
 2. **Yarn Mapping Nightmares:** Obfuscated intermediary names (`field_1234`, `method_5678`) exist in older mixins (`intermediary.json`). These mixins must be migrated to Named mappings before they can be considered stable.
 3. **Compile Before Commit:** Any structural change to packet arguments or mixins must be verified against the 1.21.4 Yarn mappings.
 4. **Android Rendering:** Do not implement features requiring heavy UI processing, blurring, complex shadows, or JNA (Java Native Access). The client must remain lightweight for FCL.
 5. **Legitimacy First:** For combat/movement modules, prefer simulating user input (`EventMoveInput`, `KeyBinding.setPressed`) or utilizing vanilla mechanics over brute-force packet injection unless explicitly designing a Rage module.
+
+### 4.7 Smart ShieldBreaker (Concept / Next Steps)
+- **Mechanic:** In 1.9+ PvP, shields block 100% damage. Axes disable shields for 5 seconds.
+- **Rage/Legit Implementation:** Detects when target raises a shield (`Entity.isBlocking()`). Instantly sends `SlotActionType.SWAP` to the axe, sends `PlayerInteractEntityC2SPacket` (ATTACK), and immediately swaps back to the sword.
+- **Bypass:** Randomize the delay between swap and attack (e.g., 50-150ms) to bypass "FastClick" or "AutoSwap" checks on Matrix/Grim.
+
+### 4.8 PacketFly / GhostFly (Concept / Next Steps)
+- **Mechanic:** Flying without being flagged for Speed/Fly.
+- **Implementation:** Intercept `EventMove` and `PlayerMoveC2SPacket`. Send packets claiming the player is standing on a solid block (e.g., modifying `y` coordinate and sending `onGround = true` despite being mid-air).
+- **Bypass:** Desyncs the client position from the server. If the server tries to pull you back, send an invalid packet (like `TeleportConfirmC2SPacket` with a spoofed ID) to force the server to accept the new Y-coordinate.
+
+### 4.9 AutoAnchor (Concept / Next Steps)
+- **Mechanic:** The deadliest weapon in Nether/End PvP. Requires placing, charging with Glowstone, and clicking again to detonate.
+- **Implementation:** Done entirely in 1 tick. Calculate block intersection (Raycast to block face). Send 3 packets in sequence: Place Anchor -> Place Glowstone -> Interact Anchor. 
+- **Bypass:** Must send precise `crosshairTarget` vectors for each interaction, otherwise GrimAC flags it as "Interact/Reach" (clicking impossible faces of the block).
