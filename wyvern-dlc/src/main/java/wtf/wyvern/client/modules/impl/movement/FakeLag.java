@@ -42,8 +42,18 @@ public class FakeLag extends Module {
     private final Timer timer = new Timer();
     
     private boolean shouldRelease = false;
+    private long randomizedMs = 100L;
 
     public FakeLag() {}
+
+    @Override
+    public void onEnable() {
+        super.onEnable();
+        packetQueue.clear();
+        timer.reset();
+        shouldRelease = false;
+        randomizedMs = calculateJitter((long) durationMs.getCurrent());
+    }
 
     @Override
     public void onDisable() {
@@ -53,16 +63,22 @@ public class FakeLag extends Module {
 
     @EventTarget
     public void onTick(EventTick event) {
-        if (mc.player == null) return;
+        // Утечка памяти и отключение: если мира нет, чистим очередь без отправки
+        if (mc.player == null || mc.world == null) {
+            packetQueue.clear();
+            return;
+        }
+
+        // Жесткий лимит пакетов для ВСЕХ режимов, чтобы избежать кика "Too many packets" (сервер кикает при спаме > 80)
+        if (packetQueue.size() >= 40) {
+            releasePackets();
+            return;
+        }
 
         if (mode.is("Duration")) {
-            long targetMs = (long) durationMs.getCurrent();
-            // Добавляем рандомизацию +- 8%
-            long jitter = (long) (targetMs * 0.08);
-            long randomizedMs = targetMs + ThreadLocalRandom.current().nextLong(-jitter, jitter + 1);
-
             if (timer.finished(randomizedMs)) {
                 releasePackets();
+                randomizedMs = calculateJitter((long) durationMs.getCurrent());
                 timer.reset();
             }
         } else if (mode.is("Condition")) {
@@ -87,7 +103,7 @@ public class FakeLag extends Module {
     public void onPacket(EventPacket event) {
         if (mc.player == null) return;
 
-        // Перехват отправляемых пакетов (мы задерживаем только PlayerMove, чтобы не сломать чат, инвентарь и т.д.)
+        // Перехват отправляемых пакетов
         if (event.isSent()) {
             Packet<?> p = event.getPacket();
             
@@ -97,6 +113,7 @@ public class FakeLag extends Module {
                 }
             }
 
+            // Перехватываем только пакеты передвижения. Чат и инвентарь должны работать без лагов.
             if (p instanceof PlayerMoveC2SPacket) {
                 packetQueue.add(p);
                 event.setCancelled(true);
@@ -106,12 +123,13 @@ public class FakeLag extends Module {
         // Перехват входящих пакетов для реакций
         if (event.isReceive() && mode.is("Condition") && !sumPackets.isEnabled() && conditionDamage.isEnabled()) {
             Packet<?> p = event.getPacket();
+            // Проверка урона по нам
             if (p instanceof EntityDamageS2CPacket damagePacket) {
                 if (damagePacket.entityId() == mc.player.getId()) {
                     shouldRelease = true;
                 }
             } else if (p instanceof EntityStatusS2CPacket statusPacket) {
-                // Статус 2 = Entity Hurt
+                // Статус 2 = Entity Hurt в ваниле
                 if (statusPacket.getEntity(mc.world) == mc.player && statusPacket.getStatus() == 2) {
                     shouldRelease = true;
                 }
@@ -120,11 +138,21 @@ public class FakeLag extends Module {
     }
 
     private void releasePackets() {
-        if (packetQueue.isEmpty() || mc.getNetworkHandler() == null) return;
+        if (packetQueue.isEmpty() || mc.getNetworkHandler() == null) {
+            packetQueue.clear();
+            return;
+        }
         
         for (Packet<?> p : packetQueue) {
+            // Игнорируем ивенты, отправляем напрямую в сеть, чтобы не зациклить модуль
             mc.getNetworkHandler().sendPacket(p);
         }
         packetQueue.clear();
+    }
+    
+    private long calculateJitter(long targetMs) {
+        long jitter = (long) (targetMs * 0.08); // 8% разброс
+        if (jitter <= 0) return targetMs;
+        return targetMs + ThreadLocalRandom.current().nextLong(-jitter, jitter + 1);
     }
 }
