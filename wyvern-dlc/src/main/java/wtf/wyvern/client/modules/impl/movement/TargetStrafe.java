@@ -59,6 +59,7 @@ public class TargetStrafe extends Module {
         // Применяем инпуты без модификации базовой скорости бега
         event.setForward(forward);
         event.setStrafe(strafe);
+        wtf.wyvern.utility.game.player.MovingUtil.fixMovementFocus(event, yaw);
     }
     
     private boolean isOverVoid() {

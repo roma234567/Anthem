@@ -40,7 +40,7 @@ public class HitboxDesync extends Module implements IMinecraft {
                                 packet.getX(mc.player.getX()) + offset,
                                 packet.getY(mc.player.getY()),
                                 packet.getZ(mc.player.getZ()) + offset,
-                                packet.isOnGround()
+                                packet.isOnGround(), mc.player.horizontalCollision
                         ));
                     } else if (packet instanceof PlayerMoveC2SPacket.Full) {
                         mc.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.Full(
@@ -49,7 +49,7 @@ public class HitboxDesync extends Module implements IMinecraft {
                                 packet.getZ(mc.player.getZ()) + offset,
                                 packet.getYaw(mc.player.getYaw()),
                                 packet.getPitch(mc.player.getPitch()),
-                                packet.isOnGround()
+                                packet.isOnGround(), mc.player.horizontalCollision
                         ));
                     }
                 }
@@ -64,7 +64,7 @@ public class HitboxDesync extends Module implements IMinecraft {
                         mc.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(
                                 packet.getYaw(mc.player.getYaw()),
                                 180.0F, // Magic pitch
-                                packet.isOnGround()
+                                packet.isOnGround(), mc.player.horizontalCollision
                         ));
                     } else if (packet instanceof PlayerMoveC2SPacket.Full) {
                         mc.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.Full(
@@ -73,7 +73,7 @@ public class HitboxDesync extends Module implements IMinecraft {
                                 packet.getZ(mc.player.getZ()),
                                 packet.getYaw(mc.player.getYaw()),
                                 180.0F, // Magic pitch
-                                packet.isOnGround()
+                                packet.isOnGround(), mc.player.horizontalCollision
                         ));
                     }
                 }

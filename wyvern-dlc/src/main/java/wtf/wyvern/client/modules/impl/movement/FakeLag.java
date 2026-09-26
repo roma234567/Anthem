@@ -5,7 +5,6 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
-import net.minecraft.network.packet.s2c.play.EntityDamageS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityStatusS2CPacket;
 import wtf.wyvern.base.events.impl.other.EventTick;
 import wtf.wyvern.base.events.impl.server.EventPacket;
@@ -124,11 +123,7 @@ public class FakeLag extends Module {
         if (event.isReceive() && mode.is("Condition") && !sumPackets.isEnabled() && conditionDamage.isEnabled()) {
             Packet<?> p = event.getPacket();
             // Проверка урона по нам
-            if (p instanceof EntityDamageS2CPacket damagePacket) {
-                if (damagePacket.entityId() == mc.player.getId()) {
-                    shouldRelease = true;
-                }
-            } else if (p instanceof EntityStatusS2CPacket statusPacket) {
+            if (p instanceof EntityStatusS2CPacket statusPacket) {
                 // Статус 2 = Entity Hurt в ваниле
                 if (statusPacket.getEntity(mc.world) == mc.player && statusPacket.getStatus() == 2) {
                     shouldRelease = true;

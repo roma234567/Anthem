@@ -39,8 +39,7 @@ public class AutoTotem extends Module {
             int totemSlot = InventoryUtil.findItem(Items.TOTEM_OF_UNDYING);
             if (totemSlot != -1) {
                 // Легитный свап: клик по слоту, затем клик по оффхэнду (слот 45)
-                mc.interactionManager.clickSlot(mc.player.playerScreenHandler.syncId, totemSlot, 0, SlotActionType.PICKUP, mc.player);
-                mc.interactionManager.clickSlot(mc.player.playerScreenHandler.syncId, 45, 0, SlotActionType.PICKUP, mc.player);
+                mc.interactionManager.clickSlot(mc.player.playerScreenHandler.syncId, InventoryUtil.indexToSlot(totemSlot), 40, SlotActionType.SWAP, mc.player);
                 // Если в оффхэнде что-то было, вернем это в инвентарь
                 mc.interactionManager.clickSlot(mc.player.playerScreenHandler.syncId, totemSlot, 0, SlotActionType.PICKUP, mc.player);
             }

@@ -114,7 +114,7 @@ public class PearlPhase extends Module {
             double x = mc.player.getX();
             double y = mc.player.getY() + 1E-4; // +0.0001
             double z = mc.player.getZ();
-            mc.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(x, y, z, false));
+            mc.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(x, y, z, false, mc.player.horizontalCollision));
         }
     }
 
